@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Champions Dashboard v2</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--primary:#1a237e;--pl:#3949ab;--accent:#e65100;--g1:#10b981;--g2:#f59e0b;--g3:#8b5cf6;--g4:#ec4899;--bg:#f0f2f8;--card:#fff;--txt:#1c1c1e;--muted:#6b7280;--bdr:#e5e7eb;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--txt);}
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#0d1557,#1a237e,#283593);color:#fff;padding:24px 36px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 24px rgba(13,21,87,.35);}
+.hdr h1{font-size:24px;font-weight:800;letter-spacing:.3px;}
+.hdr p{font-size:12px;opacity:.75;margin-top:3px;}
+.hdr-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;}
+/* TABS */
+.tabs{background:#fff;border-bottom:2px solid var(--bdr);padding:0 36px;display:flex;gap:2px;overflow-x:auto;}
+.tab{padding:13px 20px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap;}
+.tab:hover{color:var(--primary);}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);}
+/* CONTENT */
+.content{padding:24px 36px;max-width:1440px;margin:0 auto;}
+.pane{display:none;}.pane.active{display:block;}
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;}
+.kpi{background:#fff;border-radius:14px;padding:18px 22px;box-shadow:0 2px 12px rgba(0,0,0,.06);border-left:5px solid var(--primary);}
+.kpi:nth-child(2){border-left-color:var(--accent);}
+.kpi:nth-child(3){border-left-color:var(--g1);}
+.kpi:nth-child(4){border-left-color:var(--g3);}
+.kpi-n{font-size:34px;font-weight:800;line-height:1;}
+.kpi-l{font-size:12px;color:var(--muted);margin-top:5px;font-weight:600;}
+/* CARD */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:20px;}
+.card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.card-t{font-size:14px;font-weight:700;color:var(--primary);margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+.ch260{position:relative;height:260px;}
+.ch300{position:relative;height:300px;}
+/* BADGE */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.bh{background:#d1fae5;color:#065f46;}.bm{background:#fef3c7;color:#92400e;}
+/* PILL */
+.pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;margin:2px 2px 2px 0;}
+.pg{background:#dbeafe;color:#1d4ed8;}
+.po{background:#d1fae5;color:#065f46;}
+.pc{background:#fce7f3;color:#9d174d;}
+.pa{background:#fef3c7;color:#92400e;}
+.pv{background:#ede9fe;color:#5b21b6;}
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px;}
+.tbl th{background:#f5f6ff;color:var(--primary);font-weight:700;padding:10px 12px;text-align:left;border-bottom:2px solid var(--bdr);white-space:nowrap;}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--bdr);vertical-align:top;}
+.tbl tr:hover td{background:#f9faff;}
+.tn{font-weight:800;color:var(--primary);}
+/* OBJ CARDS */
+.obj-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.obj-card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,.06);border-top:4px solid var(--primary);}
+.obj-card:nth-child(even){border-top-color:var(--accent);}
+.obj-card:nth-child(3n){border-top-color:var(--g1);}
+.obj-card:nth-child(4n){border-top-color:var(--g3);}
+.obj-team{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.obj-dept{font-size:13px;font-weight:800;color:var(--primary);margin:3px 0 6px;}
+.obj-proj{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:10px;}
+.obj-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:10px;margin-bottom:4px;}
+.obj-text{font-size:12.5px;line-height:1.6;color:#374151;}
+/* TOOL GROUPS */
+.tg{background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:14px;}
+.tg-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.tg-title{display:flex;align-items:center;gap:10px;}
+.tg-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.tg-name{font-size:15px;font-weight:800;}
+.tg-sub{font-size:12px;color:var(--muted);}
+.prog-wrap{margin:6px 0;}
+.prog-lbl{display:flex;justify-content:space-between;font-size:11px;font-weight:600;margin-bottom:3px;}
+.prog-bar{height:7px;background:#e5e7eb;border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;}
+.chip-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
+.chip{background:#f3f4f6;border:1px solid var(--bdr);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;color:#374151;}
+/* TRAINING */
+.tr-card{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:14px;overflow:hidden;}
+.tr-hdr{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bdr);}
+.tr-title{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:800;}
+.tr-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.tr-cnt{background:var(--primary);color:#fff;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700;}
+.tr-body{padding:14px 20px;}
+.tr-section{margin-bottom:12px;}
+.tr-section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;}
+.tr-tag{display:inline-block;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:600;margin:3px;}
+.trainer-tag{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;}
+.content-tag{background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;}
+.need-row{display:flex;gap:8px;padding:7px 0;border-top:1px solid #f3f4f6;font-size:12px;}
+.need-team{font-weight:800;color:var(--primary);min-width:55px;}
+.need-txt{color:#4b5563;line-height:1.5;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <h1>🏆 AI Champions Dashboard</h1>
+    <p>ภาพรวมโปรเจกต์ · Objective & Outcome · AI Tools · Training Needs</p>
+  </div>
+  <div class="hdr-badge">19 ทีม · 19 โปรเจกต์ · มิ.ย. 2026</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="show('ov',this)">📊 ภาพรวม</div>
+  <div class="tab" onclick="show('oo',this)">🎯 Objective & Outcome</div>
+  <div class="tab" onclick="show('tl',this)">🛠️ AI Tools Grouping</div>
+  <div class="tab" onclick="show('tr',this)">🎓 Training Needs</div>
+  <div class="tab" onclick="show('tm',this)">👥 ตารางทีมทั้งหมด</div>
+</div>
+
+<!-- ====== TAB 1: OVERVIEW ====== -->
+<div id="pane-ov" class="pane active">
+<div class="content">
+
+<div class="kpi-row">
+  <div class="kpi"><div class="kpi-n" style="color:var(--primary)">19</div><div class="kpi-l">ทีม AI Champions</div></div>
+  <div class="kpi"><div class="kpi-n" style="color:var(--accent)">12</div><div class="kpi-l">Feasibility: High (63%)</div></div>
+  <div class="kpi"><div class="kpi-n" style="color:var(--g1)">17</div><div class="kpi-l">ทีมใช้ Gemini (89%)</div></div>
+  <div class="kpi"><div class="kpi-n" style="color:var(--g3)">9</div><div class="kpi-l">Training Categories</div></div>
+</div>
+
+<div class="grid2">
+  <div class="card">
+    <div class="card-t">📈 Feasibility ของโปรเจกต์</div>
+    <div class="ch260"><canvas id="c-feas"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-t">🛠️ Top AI Tools ที่ใช้มากที่สุด</div>
+    <div class="ch260"><canvas id="c-toptools"></canvas></div>
+  </div>
+</div>
+
+<div class="grid2">
+  <div class="card">
+    <div class="card-t">📦 Tool Category ที่ทีมใช้</div>
+    <div class="ch260"><canvas id="c-toolcat"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-t">🎓 Training Needs หมวดหมู่</div>
+    <div class="ch260"><canvas id="c-trainov"></canvas></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-t">🏢 สรุปโปรเจกต์ทั้ง 19 ทีม</div>
+  <div style="overflow-x:auto">
+  <table class="tbl">
+    <thead><tr><th>Team</th><th>ฝ่าย/แผนก</th><th>ชื่อโปรเจกต์</th><th>Feasibility</th><th>AI Tools หลัก</th></tr></thead>
+    <tbody>
+      <tr><td class="tn">T1</td><td>Business Development</td><td>ระบบจัดการข้อมูล & Workflow อัตโนมัติ</td><td><span class="badge bm">Medium</span></td><td><span class="pill pg">Gemini</span><span class="pill po">ChatGPT</span></td></tr>
+      <tr><td class="tn">T2</td><td>Commerce</td><td>Thairath Shopping AAA (AI Agent All-Rounder)</td><td><span class="badge bh">High</span></td><td><span class="pill pg">Gemini</span><span class="pill pc">Midjourney</span><span class="pill pc">Adobe</span></td></tr>
+      <tr><td class="tn">T3</td><td>ฝ่ายการตลาด</td><td>Artwork Strategy Planner</td><td><span class="badge bh">High</span></td><td><span class="pill pg">Gemini</span><span class="pill po">ChatGPT</span><span class="pill pc">Midjourney</span></td></tr>
+      <tr><td class="tn">T5</td><td>แผนกเทคโนโลยีฯ ออกอากาศ</td><td>Media Source Quality Checking</td><td><span class="badge bh">High</span></td><td><span class="pill pa">n8n</span></td></tr>
+      <tr><td class="tn">T6</td><td>Product & Technology (Tech)</td><td>Human Always in the Loop</td><td><span class="badge bh">High</span></td><td><span class="pill pg">Gemini</span><span class="pill po">ChatGPT</span><span class="pill pv">Copilot</span></td></tr>
+      <tr><td class="tn">T7</td><td>ฝ่ายทรัพยากรบุคคล</td><td>THAIRATH People Intelligence Hub</td><td><span class="badge bh">High</span></td><td><span class="pill pg">Gemini</span><span class="pill pg">NotebookLM</span><span class="pill po">ChatGPT</span></td></tr>
+      <tr><td class="tn">T8</td><td>ฝ่ายบัญชี</td><td>Acc Chatbot Buddy</td><td><span class="badge bm">Medium</span></td><td><span class="pill pg">Gemini</span><span class="pill po">ChatGPT</span></td></tr>
+      <tr><td class="tn">T9</td><td>Product & Technology (Tech)</td><td>A.I.D.A.</td><td><span class="badge bh">High</span></td><td><span class="pill pg">Gemini</span></td></tr>
+      <tr><td class="tn">T10</td><td>ฝ่ายบรรณาธิการทีวี</td><td>AI Newsroom Assistant</td><td><span class="badge bm">Medium</span></td><td><span class="pill pg">Gemini</span><span class="pill po">ChatGPT</span></td></tr>
+      <tr><td class="tn">T11</td><td>ฝ่ายรายการ</td><td>วิเคราะห์ข้อมูล & วางแผนคอนเทนต์</td><td><span class="badge bm">Medium</span></td><td><span class="pill pg">Gemini</span><span class="pill po">ChatGPT</span></td></tr>
+      <tr><td class="tn">T12</td><td>บรรณาธิการออนไลน์ (Non-News)</td><td>PR NEWS - Automation (Mail-to-Article)</td><td><span class="badge bh">High</span></td><td><span class="pill pg">Gemini</span><span class="pill pg">Google Flow</span><span class="pill po">ChatGPT</span></td></tr>
+      <tr><td class="tn">T13</td><td>Thairath Money</td><td>Doc-to-CMS Integration System</td><td><span class="badge bm">Medium</span></td><td><span class="pill pa">Google Apps Script</span></td></tr>
+      <tr><td class="tn">T14</td><td>ฝ่าย Mirror</td><td>ไม่เททุกแชท (No Chat Left Behind)</td><td><span class="badge bm">Medium</span></td><td><span class="pill pg">Gemini</span><span class="pill po">ChatGPT</span><span class="pill pa">ManyChat</span></td></tr>
+      <tr><td class="tn">T16</td><td>ฝ่ายกีฬา</td><td>AI FOR THAIRATH SPORT</td><td><span class="badge bh">High</span></td><td><span class="pill pg">Gemini</span><span class="pill po">ChatGPT</span><span class="pill pc">Adobe</span></td></tr>
+      <tr><td class="tn">T17</td><td>ฝ่ายไทยรัฐบันเทิง</td><td>เรื่องใหญ่แล้วล่ะ</td><td><span class="badge bh">High</span></td><td><span class="pill pg">Gemini</span><span class="pill pc">Adobe</span><span class="pill pc">Freepik</span></td></tr>
+      <tr><td class="tn">T18</td><td>บรรณาธิการออนไลน์ (News)</td><td>FlowCut</td><td><span class="badge bh">High</span></td><td><span class="pill pg">Gemini</span><span class="pill pc">Adobe</span></td></tr>
+      <tr><td class="tn">T19</td><td>Thairath Creative</td><td>Creative Co-Pilot AI</td><td><span class="badge bh">High</span></td><td><span class="pill pg">Gemini</span><span class="pill po">ChatGPT</span></td></tr>
+      <tr><td class="tn">T20</td><td>ฝ่ายสร้างสรรค์และออกแบบ</td><td>AI & Automation for VDO GRAPHIC</td><td><span class="badge bm">Medium</span></td><td><span class="pill pg">Gemini</span><span class="pill pg">Google Flow</span></td></tr>
+      <tr><td class="tn">T21</td><td>Creative Digital Studio</td><td>AI Image Resizer</td><td><span class="badge bm">Medium</span></td><td><span class="pill pg">Gemini</span><span class="pill po">ChatGPT</span><span class="pill pc">Freepik</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ====== TAB 2: OBJECTIVE & OUTCOME ====== -->
+<div id="pane-oo" class="pane">
+<div class="content">
+
+<div class="card" style="margin-bottom:20px;border-left:5px solid var(--primary);padding:14px 20px;">
+  <div style="font-size:13px;color:var(--muted);">🎯 แต่ละทีมมีวัตถุประสงค์ (Objective) ที่ชัดเจนและผลลัพธ์ที่คาดหวัง (Outcome) ที่วัดได้ — ส่วนใหญ่มุ่งเน้นลดเวลา ลด Manual Work และเพิ่มประสิทธิภาพด้วย AI</div>
+</div>
+
+<div class="obj-grid">
+
+<div class="obj-card">
+  <div class="obj-team">Team 1</div>
+  <div class="obj-dept">Business Development</div>
+  <div class="obj-proj">📁 ระบบจัดการข้อมูล & Workflow อัตโนมัติ (ไทยรัฐตะกร้าแตก)</div>
+  <span class="badge bm">Medium</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">ลดการกรอกข้อมูลซ้ำซ้อนระหว่างไฟล์ และเชื่อมการทำงานของทุกทีมบน Collaboration Platform เดียว</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">สร้าง Unified Data Layer + AI Layer ทับ เพื่อให้ทุกทีมทำงานจากข้อมูลชุดเดียวกัน ลดงาน Manual ที่ซ้ำซ้อน</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">Data Layer + AI Layer: จัด Structure data กำหนด Brand Sheet/Brand ID เป็น Primary Key → ข้อมูลจาก Form ไหลอัตโนมัติไปยัง Product List และ Production Brief / AI ลดงาน Manual ที่ใช้ความรู้ซ้ำ</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 2</div>
+  <div class="obj-dept">Commerce</div>
+  <div class="obj-proj">🛒 Thairath Shopping AAA (AI Agent All-Rounder)</div>
+  <span class="badge bh">High</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">ลดขั้นตอนตั้งแต่เขียนบทความ แคปชั่น Copy Tag ปรับ SEO รวมถึงสร้างรูปภาพประกอบ ตั้งแต่ต้นจนจบกระบวนการ</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">ทำงานได้มีประสิทธิภาพขึ้นในเวลาจำกัด รองรับงานส่วนอื่นที่อาจเพิ่มขึ้นในอนาคต</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">สร้าง Flow การทำงานอัตโนมัติสำหรับงาน Routine ทั้งบทความ (SEO, Copy, Tag) และ Social Media ที่เน้น Conversion โดยใช้ effort น้อยที่สุดแต่ได้ผลลัพธ์สูงสุด</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 3</div>
+  <div class="obj-dept">ฝ่ายการตลาด</div>
+  <div class="obj-proj">🎨 Artwork Strategy Planner</div>
+  <span class="badge bh">High</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">1) ลดเวลาทำบรีฟ Routine ให้ทีมโฟกัสกับไอเดีย 2) ควบคุม Design/Message/Tone ให้ทิศทางเดียวกัน 3) คุม Timeline ลดงานตกหล่นและแก้ซ้ำ</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">เวลาคิดงานเพิ่มขึ้น, คอนเทนต์ตามกระแสมากขึ้น, ลดเวลาแก้งาน, ทุกช่องทาง Brand Direction เดียวกัน</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">ใส่ข้อมูลสำคัญครั้งเดียว (Big Idea, Key Message, Phasing, Platform, จำนวนชิ้นงาน) → AI ผลิตบรีฟ วางแผนคอนเทนต์ และจัดการ Workflow ออกมาให้ทันที</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 5</div>
+  <div class="obj-dept">แผนกเทคโนโลยีฯ ออกอากาศ</div>
+  <div class="obj-proj">📡 Media Source Quality Checking</div>
+  <span class="badge bh">High</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">ลดกระบวนการตรวจสอบคุณภาพมีเดียไฟล์ก่อนนำออกอากาศ, ตอบสนองเมื่อมีไฟล์ไม่ได้มาตรฐานเข้าระบบ</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">ลดกระบวนการตรวจสอบ, ตอบสนองไฟล์ไม่ได้มาตรฐานได้อัตโนมัติ, ตรวจสอบข้อผิดพลาดได้ครบถ้วน</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">ระบบอัตโนมัติตรวจสอบคุณภาพไฟล์มีเดียด้วย n8n — ตรวจจับไฟล์ไม่ได้มาตรฐาน แจ้งเตือน และตอบสนองอัตโนมัติก่อนออกอากาศ</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 6</div>
+  <div class="obj-dept">Product & Technology (Tech)</div>
+  <div class="obj-proj">💻 Human Always in the Loop</div>
+  <span class="badge bh">High</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">พัฒนาระบบ Workflow ระหว่างมนุษย์+AI ให้ทีม Dev, QA, UX/UI ทำงานเร็วขึ้น ลดงานซ้ำ เพิ่มคุณภาพ มนุษย์ยังตรวจสอบจุดสำคัญ</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">ลดเวลา bug fix, ลด manual work, เพิ่มมาตรฐาน code/design/workflow, ติดตาม requirement & deployment ได้ง่ายขึ้น</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">AI Workflow: AI ช่วย implement feature/bug fix, generate test, ตรวจมาตรฐาน code/design, วิเคราะห์ requirement — มนุษย์ review และตัดสินใจขั้นสุดท้ายเสมอ</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 7</div>
+  <div class="obj-dept">ฝ่ายทรัพยากรบุคคล</div>
+  <div class="obj-proj">👥 THAIRATH People Intelligence Hub</div>
+  <span class="badge bh">High</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">พัฒนา AI Platform บริหาร HR ตั้งแต่สรรหา → จัดการ Knowledge → บริหารทีม ลดงานซ้ำซ้อน เพิ่มความแม่นยำในการวิเคราะห์ข้อมูล</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">กระบวนการสรรหาแม่นยำขึ้น, Knowledge ถูกจัดเก็บนำกลับมาใช้ได้, หัวหน้าบริหารทีมด้วย Data, รองรับ Talent & Workforce Planning</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">3 Core Modules: 1) Smart Talent Matching — Pre-screen Resume, วิเคราะห์ DISC 2) Knowledge Hub — จัดเก็บ/ค้นหาองค์ความรู้องค์กร 3) Manager AI Co-Pilot — บริหารทีมด้วย People Analytics</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 8</div>
+  <div class="obj-dept">ฝ่ายบัญชี</div>
+  <div class="obj-proj">💬 Acc Chatbot Buddy</div>
+  <span class="badge bm">Medium</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">1) Chatbot ตอบคำถามบัญชี/ภาษี/เบิกจ่าย 24 ชม. 2) ลดคำถามซ้ำรายวันของทีม AP, AR, GL จากทุกหน่วยงาน</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">ลดเวลาทีมบัญชี 30% จากการตอบแชต/โทรซ้ำ, ลดเอกสารตีกลับ, พนักงานเช็คเงื่อนไขเองได้ก่อนส่ง</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">ACC AI Chatbot: ตอบ FAQ บัญชี/ภาษี/เบิกจ่าย 24 ชม., ค้นหา Policy/SOP/Timeline, แนะนำขั้นตอน, สรุปเอกสาร — ลดภาระตอบคำถามซ้ำของทีม</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 9</div>
+  <div class="obj-dept">Product & Technology (Tech)</div>
+  <div class="obj-proj">🤖 A.I.D.A.</div>
+  <span class="badge bh">High</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">AI Assistant สำหรับเลขา/แอดมิน — แก้ปัญหาถาม-ตอบซ้ำ, ดึงฟอร์มเอกสารทันที, ลดคอขวดประสานงานข้ามแผนก</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">ลดเวลาค้นหาเอกสาร/ประสานงาน 50%, กรอกฟอร์มถูกต้อง Zero Errors, Self-Service ได้ตลอด 24 ชม.</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">AI Secretary Assistant ผ่าน Google Gems หรือฝัง AI บน Google Chat — Intelligent Hub เชื่อม Shared Drive + Google Calendar ตอบคำถาม ดึงฟอร์ม ประสานงานข้ามแผนกได้ทันที</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 10</div>
+  <div class="obj-dept">ฝ่ายบรรณาธิการทีวี</div>
+  <div class="obj-proj">📺 AI Newsroom Assistant</div>
+  <span class="badge bm">Medium</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">ลดเวลาจัดการฟุตเทจและเตรียมข่าว, ลด Manual ในการแยกช็อต จัดกลุ่มภาพ แปลภาษา สรุปประเด็น รองรับทีม Producer/Rewriter</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">ลดเวลา Preview ฟุตเทจ/เขียนข่าว 30%, ลดภาระ Manual, จัดการข่าวปริมาณมากได้มีประสิทธิภาพ</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">AI Workflow ข่าว: Detect/Tag ช็อตอัตโนมัติ, ถอดเสียงสัมภาษณ์, แปลภาษา, สรุปประเด็นคลิปยาว, Generate พาดหัว/โปรยข่าว — รองรับ Producer, Rewriter, ห้องควบคุม</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 11</div>
+  <div class="obj-dept">ฝ่ายรายการ</div>
+  <div class="obj-proj">📊 วิเคราะห์ข้อมูล & วางแผนคอนเทนต์</div>
+  <span class="badge bm">Medium</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">วิเคราะห์ข้อมูลคอนเทนต์จากหลายแหล่ง (Gemini/ChatGPT/Claude) ที่ให้ผลต่างกัน เพื่อหาข้อเท็จจริง</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">ประมวลผลทุกช่องทางพร้อมกัน หาจุดแข็งของคอนเทนต์เพื่อต่อยอดได้ดีขึ้น</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">รวมผลวิเคราะห์จาก Gemini + ChatGPT + Claude พร้อมกัน สร้างบทสรุปกลางอัตโนมัติ เพื่อให้ทีมต่อยอดคอนเทนต์ได้ทันทีโดยไม่ต้องประมวลผลเอง</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 12</div>
+  <div class="obj-dept">บรรณาธิการออนไลน์ (Non-News)</div>
+  <div class="obj-proj">⚡ PR NEWS - Automation (Mail-to-Article)</div>
+  <span class="badge bh">High</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">พัฒนาระบบ Automation + AI ดึงข้อมูลจากอีเมล PR → สร้าง Draft Article (Headline, โปรย, Tag, Resize ภาพ) → ส่ง CMS อัตโนมัติ</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">ลด Time-to-Publish, บริหาร Non-News 7 วันด้วยคน Standby 2 คน, ลดขั้นตอน Manual ซ้ำซ้อนทั้งหมด</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">Human-in-the-loop Automation: Email → ดึงข้อความ+ภาพ → AI เขียน Headline/โปรย/Tag + Auto Resize ภาพ → Draft ใน CMS → บรรณาธิการ Approve เผยแพร่</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 13</div>
+  <div class="obj-dept">Thairath Money</div>
+  <div class="obj-proj">🔗 Doc-to-CMS Integration System</div>
+  <span class="badge bm">Medium</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">เปลี่ยน Manual Copy-Paste จาก Google Docs → CMS ให้เป็นระบบเชื่อมโยงอัตโนมัติ เพิ่มประสิทธิภาพสูงสุดสำหรับผู้สร้างเนื้อหา</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">ความเร็วส่งงานหลังบ้านเพิ่ม 80% (จาก 10-15 นาที → 1-2 นาที/บทความ), ลดขั้นตอน 90%</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">ลากไฟล์ Google Docs ไปโฟลเดอร์ 'พร้อมลงเว็บ' → Script ตรวจทุก 5 นาที ดึงเนื้อหา จัดรูปแบบ → ส่งเข้า CMS อัตโนมัติ (Google Apps Script)</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 14</div>
+  <div class="obj-dept">ฝ่าย Mirror</div>
+  <div class="obj-proj">💌 ไม่เททุกแชท (No Chat Left Behind)</div>
+  <span class="badge bm">Medium</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">พัฒนาระบบ AI คัดกรองและจัดหมวดหมู่ข้อความ FB/IG Inbox อัตโนมัติ 24 ชม. วิเคราะห์เจตนาและความสำคัญได้แม่นยำ</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">ตอบกลับครบ 100%, ลดเวลาตอบ, ลดภาระแอดมิน, เพิ่มผู้เข้าชม Long-form Content, ทีมงานมีระบบมากขึ้น</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">AI Smart Gatekeeper: รับข้อความ FB/IG Inbox → วิเคราะห์เจตนา → ตอบ FAQ อัตโนมัติ + คัดแยกเคสสำคัญ (ลูกค้า, วิกฤต) ส่งต่อบรรณาธิการทันที (ManyChat + Zapier)</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 16</div>
+  <div class="obj-dept">ฝ่ายกีฬา</div>
+  <div class="obj-proj">⚽ AI FOR THAIRATH SPORT</div>
+  <span class="badge bh">High</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">VDO: หาประเด็นกระแสโซเชียลไทย/เทศ เพื่อวางแผนรายการและโปรโมท | ข่าว: หาข้อมูลสถิติ/เนื้อหาน่าสนใจ ทำข่าว+คลิปเล่าเรื่อง</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">ลดเวลาทำงาน, ความถูกต้องและแม่นยำมากขึ้น</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">AI ช่วยทีม VDO หาประเด็นกระแสโซเชียล วางแผนรายการ + ทีมข่าวค้นหาข้อมูลสถิติ/เนื้อหาน่าสนใจ เพื่อผลิตข่าวและคลิปเล่าเรื่อง THAIRATH SPORT</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 17</div>
+  <div class="obj-dept">ฝ่ายไทยรัฐบันเทิง</div>
+  <div class="obj-proj">🎬 เรื่องใหญ่แล้วล่ะ</div>
+  <span class="badge bh">High</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">1) ลดเวลา/ทดแทนตำแหน่งขาด (กราฟิก) 2) ครีเอทงานขายลูกค้าได้อย่างมีประสิทธิภาพ 3) พัฒนาบุคลากรใช้ AI ควบคู่งาน 4) ผลิตโปรเจกต์ใน 1 วัน</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">ลดเวลาทำงาน, ครีเอทงานเสนอลูกค้าได้ดีเยี่ยม, ข้อบกพร่องน้อยที่สุด</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">AI ขยายไอเดีย + ผลิต Presentation ขายลูกค้า + ทำกราฟิกเบื้องต้น (Freepik, Adobe, Seedance) + สร้างภาพตามจินตนาการ — ผลิตโปรเจกต์ขายลูกค้าได้ใน 1 วัน</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 18</div>
+  <div class="obj-dept">บรรณาธิการออนไลน์ (News)</div>
+  <div class="obj-proj">✂️ FlowCut</div>
+  <span class="badge bh">High</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">นำ AI สนับสนุนงานตัดต่อ ออกแบบ User-Friendly Flow ลดความซับซ้อนในการส่งต่อและบริหารงานในทีม ลดขั้นตอนซ้ำซ้อน</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">ทีมตัดต่อส่งมอบวิดีโอเร็วขึ้น, ประสานงานในทีมลื่นไหล, กระบวนการส่งต่อ-ติดตามงานกระชับไร้รอยต่อ</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">FlowCut: AI ถอดเทปภาษาไทย แยกประโยค ลบคำซ้ำ เลือกช่วงดีที่สุด → บันทึกใน Google Docs → ทีมตัดต่อใช้เป็นฐาน (CapCut AI, Gling, Codex)</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 19</div>
+  <div class="obj-dept">Thairath Creative</div>
+  <div class="obj-proj">✨ Creative Co-Pilot AI</div>
+  <span class="badge bh">High</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">เปลี่ยนภาวะคอขวดของปริมาณงาน Creative ให้กลายเป็นระบบขับเคลื่อนปริมาณงานให้คล่องตัวของทีม</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">ลดเวลาทำงานลง 30–50% โดยยังคงคุณภาพของงาน Creative</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">AI Workflow for Creative: AI Assistant ช่วยคิดไอเดีย ผลิต Content ปริมาณมาก ลด Manual Work — เปลี่ยนคอขวดให้เป็นระบบขับเคลื่อนงาน Creative ที่คล่องตัว</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 20</div>
+  <div class="obj-dept">ฝ่ายสร้างสรรค์และออกแบบ</div>
+  <div class="obj-proj">🎞️ AI & Automation for VDO GRAPHIC</div>
+  <span class="badge bm">Medium</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">ลดงานกราฟิก Pattern ที่ต้องพิมพ์/แก้ข้อความเดิมซ้ำแล้วซ้ำเล่า และลดระยะเวลาผลิต Simulation ข่าวที่มีจำนวนมาก</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">ย่นเวลาผลิตงาน Pattern เพื่อคืนเวลาให้กับงานสร้างสรรค์อื่นของแผนก</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">JSON Agent Workflow: บก. กรอกข้อมูล → Agent จัดโครงสร้าง JSON → Make.com สร้าง CSV → AI ผลิต Storyboard → QC → ส่งไฟล์+Metadata เข้า Mimir อัตโนมัติ</div>
+</div>
+
+<div class="obj-card">
+  <div class="obj-team">Team 21</div>
+  <div class="obj-dept">Creative Digital Studio</div>
+  <div class="obj-proj">🖼️ AI Image Resizer</div>
+  <span class="badge bm">Medium</span>
+  <div class="obj-label">🎯 Objective</div>
+  <div class="obj-text">นำ AI มาสร้างภาพ Artwork ในทุกไซส์ (1:1, 4:5, 16:9, 9:16) จากต้นแบบเดียว</div>
+  <div class="obj-label">✅ Expected Outcome</div>
+  <div class="obj-text">ลดระยะเวลาการทำงาน 30% ด้วย AI ช่วยผลิตภาพให้ถูกต้องและเหมาะสมทุกขนาด</div>
+  <div class="obj-label">💡 AI Solution Idea</div>
+  <div class="obj-text" style="background:#f0f4ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:6px;margin-top:2px">Gemini/ChatGPT Prompt Engine + Freepik/Nano Banana สร้างภาพ → AI Resize Artwork จากต้นแบบ 1 ไซส์ ออกครบทุก Ratio (1:1, 4:5, 16:9, 9:16) อัตโนมัติ</div>
+</div>
+
+</div><!-- end obj-grid -->
+</div>
+</div>
+
+<!-- ====== TAB 3: AI TOOLS ====== -->
+<div id="pane-tl" class="pane">
+<div class="content">
+
+<div class="kpi-row">
+  <div class="kpi"><div class="kpi-n" style="color:#1d4ed8">17</div><div class="kpi-l">ทีมใช้ Gemini (89%)</div></div>
+  <div class="kpi"><div class="kpi-n" style="color:#065f46">13</div><div class="kpi-l">ทีมใช้ ChatGPT (68%)</div></div>
+  <div class="kpi"><div class="kpi-n" style="color:#7c3aed">6</div><div class="kpi-l">ทีมใช้ NotebookLM</div></div>
+  <div class="kpi"><div class="kpi-n" style="color:#9d174d">7</div><div class="kpi-l">ทีมใช้ Creative AI</div></div>
+</div>
+
+<div class="grid2" style="margin-bottom:20px">
+  <div class="card">
+    <div class="card-t">📊 จำนวนทีมต่อ Tool</div>
+    <div class="ch300"><canvas id="c-alltools"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-t">🥧 สัดส่วน Tool Category</div>
+    <div class="ch300"><canvas id="c-catpie"></canvas></div>
+  </div>
+</div>
+
+<!-- Google AI Suite -->
+<div class="tg">
+  <div class="tg-hdr">
+    <div class="tg-title">
+      <div class="tg-icon" style="background:#dbeafe">🔵</div>
+      <div><div class="tg-name" style="color:#1d4ed8">Google AI Suite</div><div class="tg-sub">เครื่องมือ AI ในระบบ Google Workspace</div></div>
+    </div>
+    <span class="badge bh">ใช้มากที่สุด · 17 ทีม</span>
+  </div>
+  <div style="margin-bottom:12px">
+    <span class="pill pg">Gemini</span><span class="pill pg">New Gem (Gems)</span><span class="pill pg">NotebookLM</span>
+    <span class="pill pg">Google Flow</span><span class="pill pg">Google AI Studio</span><span class="pill pg">Google Vids</span><span class="pill pg">Nano Banana</span>
+  </div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>Gemini</span><span>17 ทีม (89%)</span></div><div class="prog-bar"><div class="prog-fill" style="width:89%;background:#3b82f6"></div></div></div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>Nano Banana</span><span>6 ทีม (32%)</span></div><div class="prog-bar"><div class="prog-fill" style="width:32%;background:#3b82f6"></div></div></div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>NotebookLM</span><span>6 ทีม (32%)</span></div><div class="prog-bar"><div class="prog-fill" style="width:32%;background:#3b82f6"></div></div></div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>New Gem</span><span>6 ทีม (32%)</span></div><div class="prog-bar"><div class="prog-fill" style="width:32%;background:#3b82f6"></div></div></div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>Google Flow</span><span>5 ทีม (26%)</span></div><div class="prog-bar"><div class="prog-fill" style="width:26%;background:#3b82f6"></div></div></div>
+  <div class="chip-row">
+    <div style="font-size:11px;font-weight:700;color:#374151;width:100%;margin-bottom:4px">ทีมที่ใช้:</div>
+    <span class="chip">T1</span><span class="chip">T2</span><span class="chip">T3</span><span class="chip">T6</span><span class="chip">T7</span><span class="chip">T8</span><span class="chip">T9</span><span class="chip">T10</span><span class="chip">T11</span><span class="chip">T12</span><span class="chip">T14</span><span class="chip">T16</span><span class="chip">T17</span><span class="chip">T18</span><span class="chip">T19</span><span class="chip">T20</span><span class="chip">T21</span>
+  </div>
+</div>
+
+<!-- OpenAI -->
+<div class="tg">
+  <div class="tg-hdr">
+    <div class="tg-title">
+      <div class="tg-icon" style="background:#d1fae5">🟢</div>
+      <div><div class="tg-name" style="color:#065f46">OpenAI & AI Assistants</div><div class="tg-sub">Text Generation & Conversational AI</div></div>
+    </div>
+    <span class="badge bh">13 ทีม (68%)</span>
+  </div>
+  <div style="margin-bottom:12px">
+    <span class="pill po">ChatGPT</span><span class="pill po">Claude AI</span><span class="pill pv">Microsoft Copilot</span>
+  </div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>ChatGPT</span><span>13 ทีม (68%)</span></div><div class="prog-bar"><div class="prog-fill" style="width:68%;background:#10b981"></div></div></div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>Claude AI</span><span>3 ทีม (16%)</span></div><div class="prog-bar"><div class="prog-fill" style="width:16%;background:#10b981"></div></div></div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>Microsoft Copilot</span><span>1 ทีม (5%)</span></div><div class="prog-bar"><div class="prog-fill" style="width:5%;background:#10b981"></div></div></div>
+  <div class="chip-row">
+    <div style="font-size:11px;font-weight:700;color:#374151;width:100%;margin-bottom:4px">ทีมที่ใช้ ChatGPT:</div>
+    <span class="chip">T1</span><span class="chip">T3</span><span class="chip">T6</span><span class="chip">T7</span><span class="chip">T8</span><span class="chip">T10</span><span class="chip">T11</span><span class="chip">T12</span><span class="chip">T14</span><span class="chip">T16</span><span class="chip">T17</span><span class="chip">T19</span><span class="chip">T21</span>
+  </div>
+</div>
+
+<!-- Creative AI -->
+<div class="tg">
+  <div class="tg-hdr">
+    <div class="tg-title">
+      <div class="tg-icon" style="background:#fce7f3">🎨</div>
+      <div><div class="tg-name" style="color:#9d174d">Creative & Image AI</div><div class="tg-sub">AI สำหรับสร้างภาพ, วิดีโอ, กราฟิก</div></div>
+    </div>
+    <span class="badge" style="background:#fce7f3;color:#9d174d">7 ทีม</span>
+  </div>
+  <div style="margin-bottom:12px">
+    <span class="pill pc">Adobe Firefly</span><span class="pill pc">Freepik AI</span><span class="pill pc">Midjourney</span><span class="pill pc">Seedance</span><span class="pill pc">CapCut AI</span><span class="pill pc">Gling</span>
+  </div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>Adobe (Firefly)</span><span>4 ทีม (21%)</span></div><div class="prog-bar"><div class="prog-fill" style="width:21%;background:#ec4899"></div></div></div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>Freepik AI</span><span>3 ทีม (16%)</span></div><div class="prog-bar"><div class="prog-fill" style="width:16%;background:#ec4899"></div></div></div>
+  <div class="prog-wrap"><div class="prog-lbl"><span>Midjourney</span><span>2 ทีม (11%)</span></div><div class="prog-bar"><div class="prog-fill" style="width:11%;background:#ec4899"></div></div></div>
+  <div class="chip-row">
+    <div style="font-size:11px;font-weight:700;color:#374151;width:100%;margin-bottom:4px">ทีมที่ใช้:</div>
+    <span class="chip">T2 — Adobe, Midjourney</span><span class="chip">T3 — Midjourney</span><span class="chip">T16 — Adobe</span>
+    <span class="chip">T17 — Adobe, Freepik, Seedance</span><span class="chip">T18 — Adobe, CapCut, Gling</span><span class="chip">T21 — Freepik</span>
+  </div>
+</div>
+
+<!-- Automation -->
+<div class="tg">
+  <div class="tg-hdr">
+    <div class="tg-title">
+      <div class="tg-icon" style="background:#fef3c7">⚙️</div>
+      <div><div class="tg-name" style="color:#92400e">Automation & No-Code</div><div class="tg-sub">Workflow อัตโนมัติโดยไม่ต้องเขียนโค้ด</div></div>
+    </div>
+    <span class="badge bm">6 ทีม</span>
+  </div>
+  <div style="margin-bottom:12px">
+    <span class="pill pa">Google Flow</span><span class="pill pa">n8n</span><span class="pill pa">Make.com</span><span class="pill pa">Zapier</span><span class="pill pa">ManyChat</span><span class="pill pa">Google Apps Script</span>
+  </div>
+  <div class="chip-row">
+    <div style="font-size:11px;font-weight:700;color:#374151;width:100%;margin-bottom:4px">ทีมที่ใช้:</div>
+    <span class="chip">T5 — n8n</span><span class="chip">T8 — Google Flow</span><span class="chip">T12 — Google Flow</span>
+    <span class="chip">T13 — Google Apps Script</span><span class="chip">T14 — ManyChat, Zapier</span><span class="chip">T20 — Google Flow</span>
+  </div>
+</div>
+
+<!-- Developer -->
+<div class="tg">
+  <div class="tg-hdr">
+    <div class="tg-title">
+      <div class="tg-icon" style="background:#ede9fe">💻</div>
+      <div><div class="tg-name" style="color:#5b21b6">Developer & Data Tools</div><div class="tg-sub">Coding, API, Data Integration</div></div>
+    </div>
+    <span class="badge" style="background:#ede9fe;color:#5b21b6">3 ทีม</span>
+  </div>
+  <div style="margin-bottom:12px">
+    <span class="pill pv">Microsoft Copilot</span><span class="pill pv">N8N</span><span class="pill pv">Google Colab</span><span class="pill pv">Figma AI</span><span class="pill pv">AI Agent (OpenClaw)</span>
+  </div>
+  <div class="chip-row">
+    <div style="font-size:11px;font-weight:700;color:#374151;width:100%;margin-bottom:4px">ทีมที่ใช้:</div>
+    <span class="chip">T2 — N8N, Google Colab</span><span class="chip">T5 — n8n</span><span class="chip">T6 — Copilot, Figma, AI Agent</span>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ====== TAB 4: TRAINING NEEDS ====== -->
+<div id="pane-tr" class="pane">
+<div class="content">
+
+<div class="kpi-row">
+  <div class="kpi"><div class="kpi-n" style="color:var(--primary)">9</div><div class="kpi-l">Training Categories</div></div>
+  <div class="kpi"><div class="kpi-n" style="color:#dc2626">7</div><div class="kpi-l">ทีมต้องการ Prompt Eng.</div></div>
+  <div class="kpi"><div class="kpi-n" style="color:var(--g2)">4</div><div class="kpi-l">ทีมต้องการ Automation</div></div>
+  <div class="kpi"><div class="kpi-n" style="color:var(--g3)">4</div><div class="kpi-l">ทีมต้องการ Creative AI</div></div>
+</div>
+
+<div class="grid2" style="margin-bottom:20px">
+  <div class="card">
+    <div class="card-t">📊 ความต้องการอบรมแต่ละหมวด</div>
+    <div class="ch300"><canvas id="c-trainbar"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-t">🗓️ แผนจัดลำดับอบรม</div>
+    <div style="padding:4px 0">
+      <div style="background:#fee2e2;border-left:4px solid #dc2626;padding:10px 14px;border-radius:8px;margin-bottom:10px">
+        <div style="font-size:12px;font-weight:700;color:#991b1b;margin-bottom:6px">🔴 รอบที่ 1 — จัดก่อน (7 ทีม ขึ้นไป)</div>
+        <div style="font-size:12px;color:#7f1d1d">Prompt Engineering & System Instructions</div>
+      </div>
+      <div style="background:#fef3c7;border-left:4px solid #d97706;padding:10px 14px;border-radius:8px;margin-bottom:10px">
+        <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:6px">🟡 รอบที่ 2 — 3-4 ทีม</div>
+        <div style="font-size:12px;color:#78350f">Automation No-Code · API & Coding · Creative AI · AI for News/Content</div>
+      </div>
+      <div style="background:#d1fae5;border-left:4px solid #059669;padding:10px 14px;border-radius:8px;margin-bottom:10px">
+        <div style="font-size:12px;font-weight:700;color:#065f46;margin-bottom:6px">🟢 รอบที่ 3 — 2-3 ทีม</div>
+        <div style="font-size:12px;color:#064e3b">Chatbot Building · Knowledge Base · AI Safety · AI Agent · Tools Overview</div>
+      </div>
+      <div style="background:#ede9fe;border-left:4px solid #7c3aed;padding:10px 14px;border-radius:8px">
+        <div style="font-size:12px;font-weight:700;color:#5b21b6;margin-bottom:6px">🟣 เฉพาะกลุ่ม</div>
+        <div style="font-size:12px;color:#4c1d95">Video Editing AI · Google Apps Script (T5, T13, T18, T20)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CAT 1 -->
+<div class="tr-card">
+  <div class="tr-hdr">
+    <div class="tr-title">
+      <div class="tr-icon" style="background:#fee2e2">✍️</div>
+      Prompt Engineering & System Instructions
+    </div>
+    <span class="tr-cnt">7 ทีม</span>
+  </div>
+  <div class="tr-body">
+    <div class="tr-section">
+      <div class="tr-section-title">💡 เนื้อหาที่ควรสอน</div>
+      <span class="tr-tag content-tag">Prompt Structure พื้นฐาน</span>
+      <span class="tr-tag content-tag">System Instruction</span>
+      <span class="tr-tag content-tag">Few-shot / Chain-of-thought</span>
+      <span class="tr-tag content-tag">ควบคุมความยาวข้อความ</span>
+      <span class="tr-tag content-tag">Hallucination Prevention</span>
+      <span class="tr-tag content-tag">Role-based Prompting</span>
+      <span class="tr-tag content-tag">Prompt for Thai Language</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">👩‍🏫 ประเภทวิทยากร</div>
+      <span class="tr-tag trainer-tag">AI Prompt Engineer</span>
+      <span class="tr-tag trainer-tag">Gemini / ChatGPT Expert</span>
+      <span class="tr-tag trainer-tag">LLM Practitioner</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">📋 ความต้องการจากทีม</div>
+      <div class="need-row"><span class="need-team">T12</span><span class="need-txt">Prompt ควบคุมตัวอักษร Headline (≤98) / โปรย (≤190) ให้แม่นยำ, Gemini Gems มักเกิน</span></div>
+      <div class="need-row"><span class="need-team">T9</span><span class="need-txt">System Instructions กำหนดบทบาท/กฎเกณฑ์, ป้องกัน Hallucination</span></div>
+      <div class="need-row"><span class="need-team">T10</span><span class="need-txt">Prompt เพื่อวิเคราะห์ข่าวได้แม่นยำ, ตรวจสอบคุณภาพผลลัพธ์จาก AI</span></div>
+      <div class="need-row"><span class="need-team">T3</span><span class="need-txt">วิธีสั่ง AI, Prompt สำหรับ Marketing Workflow และวางแผนคอนเทนต์</span></div>
+      <div class="need-row"><span class="need-team">T2</span><span class="need-txt">การทำ Prompt ที่มีประสิทธิภาพ, Content Marketing, Content Analyst</span></div>
+      <div class="need-row"><span class="need-team">T14</span><span class="need-txt">Prompt Engineering & System Instruction สำหรับ Chatbot</span></div>
+      <div class="need-row"><span class="need-team">T8</span><span class="need-txt">Prompt จัดโครงสร้างเอกสารบัญชีให้ AI อ่านง่าย, จำกัดขอบเขตคำตอบ</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CAT 2 -->
+<div class="tr-card">
+  <div class="tr-hdr">
+    <div class="tr-title">
+      <div class="tr-icon" style="background:#fef3c7">⚙️</div>
+      AI Automation & No-Code / Low-Code Workflow
+    </div>
+    <span class="tr-cnt">4 ทีม</span>
+  </div>
+  <div class="tr-body">
+    <div class="tr-section">
+      <div class="tr-section-title">💡 เนื้อหาที่ควรสอน</div>
+      <span class="tr-tag content-tag">Google Flow พื้นฐาน-กลาง</span>
+      <span class="tr-tag content-tag">Make.com</span>
+      <span class="tr-tag content-tag">Zapier</span>
+      <span class="tr-tag content-tag">Email Trigger Automation</span>
+      <span class="tr-tag content-tag">Human-in-the-loop Design</span>
+      <span class="tr-tag content-tag">API Connection No-code</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">👩‍🏫 ประเภทวิทยากร</div>
+      <span class="tr-tag trainer-tag">No-Code Automation Expert</span>
+      <span class="tr-tag trainer-tag">Google Workspace Specialist</span>
+      <span class="tr-tag trainer-tag">Workflow Automation Trainer</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">📋 ความต้องการจากทีม</div>
+      <div class="need-row"><span class="need-team">T12</span><span class="need-txt">Google Flow เชื่อม Email → Auto Resize ภาพ → สร้าง Draft ใน CMS</span></div>
+      <div class="need-row"><span class="need-team">T1</span><span class="need-txt">Tools & Architecture สำหรับ Automation, Zapier, Google Apps Script</span></div>
+      <div class="need-row"><span class="need-team">T20</span><span class="need-txt">Make.com สำหรับงาน VDO Graphic Pattern</span></div>
+      <div class="need-row"><span class="need-team">T14</span><span class="need-txt">การเชื่อมต่อระบบ Chatbot กับ Backend (ManyChat + Zapier)</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CAT 3 -->
+<div class="tr-card">
+  <div class="tr-hdr">
+    <div class="tr-title">
+      <div class="tr-icon" style="background:#fce7f3">🎨</div>
+      AI for Creative, Image & Video Generation
+    </div>
+    <span class="tr-cnt">4 ทีม</span>
+  </div>
+  <div class="tr-body">
+    <div class="tr-section">
+      <div class="tr-section-title">💡 เนื้อหาที่ควรสอน</div>
+      <span class="tr-tag content-tag">Seedance / Video AI Generation</span>
+      <span class="tr-tag content-tag">AI ตัดต่อวิดีโอ (CapCut AI, Gling)</span>
+      <span class="tr-tag content-tag">Midjourney / Freepik / Adobe Firefly</span>
+      <span class="tr-tag content-tag">Image Resize & Format ด้วย AI</span>
+      <span class="tr-tag content-tag">AI No-code Creative Workflow</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">👩‍🏫 ประเภทวิทยากร</div>
+      <span class="tr-tag trainer-tag">AI Creative Tools Expert</span>
+      <span class="tr-tag trainer-tag">Generative Image Specialist</span>
+      <span class="tr-tag trainer-tag">Video AI / Editing Trainer</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">📋 ความต้องการจากทีม</div>
+      <div class="need-row"><span class="need-team">T17</span><span class="need-txt">Seedance และโปรแกรมสร้างภาพจากจินตนาการให้กลายเป็นรูปธรรม</span></div>
+      <div class="need-row"><span class="need-team">T18</span><span class="need-txt">การตัดต่อโดยใช้ AI (FlowCut — CapCut, Gling, Codex)</span></div>
+      <div class="need-row"><span class="need-team">T21</span><span class="need-txt">AI No Coding สำหรับงาน Graphic/Visual ทุก Ratio</span></div>
+      <div class="need-row"><span class="need-team">T16</span><span class="need-txt">AI สำหรับพัฒนารายการ, ผลิตคลิป, ทำข่าวกีฬา</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CAT 4 -->
+<div class="tr-card">
+  <div class="tr-hdr">
+    <div class="tr-title">
+      <div class="tr-icon" style="background:#d1fae5">📰</div>
+      AI for News & Content Production Workflow
+    </div>
+    <span class="tr-cnt">4 ทีม</span>
+  </div>
+  <div class="tr-body">
+    <div class="tr-section">
+      <div class="tr-section-title">💡 เนื้อหาที่ควรสอน</div>
+      <span class="tr-tag content-tag">AI Newsroom Workflow</span>
+      <span class="tr-tag content-tag">AI วิเคราะห์ข่าว / ถอดคำสัมภาษณ์</span>
+      <span class="tr-tag content-tag">Content Planning & Brief ด้วย AI</span>
+      <span class="tr-tag content-tag">Quality Control ผลลัพธ์จาก AI</span>
+      <span class="tr-tag content-tag">Marketing AI Workflow</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">👩‍🏫 ประเภทวิทยากร</div>
+      <span class="tr-tag trainer-tag">AI in Media / Journalism Expert</span>
+      <span class="tr-tag trainer-tag">Content Marketing AI Trainer</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">📋 ความต้องการจากทีม</div>
+      <div class="need-row"><span class="need-team">T10</span><span class="need-txt">AI Tools สำหรับทีมข่าว, AI Workflow ร่วมกันระหว่างทีม Producer/Rewriter</span></div>
+      <div class="need-row"><span class="need-team">T3</span><span class="need-txt">Marketing Workflow, AI ช่วยบรีฟงาน, วางแผนคอนเทนต์, จัดการ Timeline</span></div>
+      <div class="need-row"><span class="need-team">T16</span><span class="need-txt">AI พัฒนาช่องทาง THAIRATH SPORT ทั้งรายการ/คลิป/ข่าว</span></div>
+      <div class="need-row"><span class="need-team">T18</span><span class="need-txt">AI ตัดต่อในกระบวนการผลิตข่าว News Online</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CAT 5 -->
+<div class="tr-card">
+  <div class="tr-hdr">
+    <div class="tr-title">
+      <div class="tr-icon" style="background:#ede9fe">🤖</div>
+      API Integration & Coding Basics + AI Agent
+    </div>
+    <span class="tr-cnt">4 ทีม</span>
+  </div>
+  <div class="tr-body">
+    <div class="tr-section">
+      <div class="tr-section-title">💡 เนื้อหาที่ควรสอน</div>
+      <span class="tr-tag content-tag">OpenAI / Gemini API</span>
+      <span class="tr-tag content-tag">Google Apps Script พื้นฐาน</span>
+      <span class="tr-tag content-tag">JSON / REST API</span>
+      <span class="tr-tag content-tag">AI Agent Design Concept</span>
+      <span class="tr-tag content-tag">Python/Node.js เบื้องต้น</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">👩‍🏫 ประเภทวิทยากร</div>
+      <span class="tr-tag trainer-tag">AI Developer / API Expert</span>
+      <span class="tr-tag trainer-tag">Google Apps Script Trainer</span>
+      <span class="tr-tag trainer-tag">AI Agent Builder</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">📋 ความต้องการจากทีม</div>
+      <div class="need-row"><span class="need-team">T2</span><span class="need-txt">การใช้และขอ API จากแพลตฟอร์มต่างๆ, พื้นฐาน Coding</span></div>
+      <div class="need-row"><span class="need-team">T1</span><span class="need-txt">ChatGPT/Gemini API, AI Specialist/Consultant สำหรับ Adopt</span></div>
+      <div class="need-row"><span class="need-team">T20</span><span class="need-txt">JSON, JSX พื้นฐาน, AI Agent สำหรับ Automation Graphic</span></div>
+      <div class="need-row"><span class="need-team">T13</span><span class="need-txt">Google Apps Script เชื่อม Google Docs → CMS</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CAT 6 -->
+<div class="tr-card">
+  <div class="tr-hdr">
+    <div class="tr-title">
+      <div class="tr-icon" style="background:#ecfdf5">💬</div>
+      Chatbot Building & Knowledge Base
+    </div>
+    <span class="tr-cnt">3 ทีม</span>
+  </div>
+  <div class="tr-body">
+    <div class="tr-section">
+      <div class="tr-section-title">💡 เนื้อหาที่ควรสอน</div>
+      <span class="tr-tag content-tag">NotebookLM / RAG System</span>
+      <span class="tr-tag content-tag">ManyChat / Chatbot Platform</span>
+      <span class="tr-tag content-tag">Structured Knowledge Base</span>
+      <span class="tr-tag content-tag">Google Shared Drive Management</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">👩‍🏫 ประเภทวิทยากร</div>
+      <span class="tr-tag trainer-tag">Chatbot / Conversational AI Expert</span>
+      <span class="tr-tag trainer-tag">Knowledge Management Specialist</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">📋 ความต้องการจากทีม</div>
+      <div class="need-row"><span class="need-team">T14</span><span class="need-txt">สร้าง Chatbot + เชื่อมต่อระบบ, Data Management</span></div>
+      <div class="need-row"><span class="need-team">T8</span><span class="need-txt">Knowledge Base จากเอกสารบัญชีจริง เพื่อให้ Chatbot ตอบถูกต้อง</span></div>
+      <div class="need-row"><span class="need-team">T9</span><span class="need-txt">Knowledge Management, Shared Drive Structure, Access Control</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CAT 7 -->
+<div class="tr-card">
+  <div class="tr-hdr">
+    <div class="tr-title">
+      <div class="tr-icon" style="background:#fef2f2">🛡️</div>
+      AI Safety, Ethics & Trust
+    </div>
+    <span class="tr-cnt">3 ทีม</span>
+  </div>
+  <div class="tr-body">
+    <div class="tr-section">
+      <div class="tr-section-title">💡 เนื้อหาที่ควรสอน</div>
+      <span class="tr-tag content-tag">AI Governance</span>
+      <span class="tr-tag content-tag">Content Safety & Moderation</span>
+      <span class="tr-tag content-tag">Data Privacy สำหรับ AI</span>
+      <span class="tr-tag content-tag">Responsible AI in Media</span>
+      <span class="tr-tag content-tag">AI Trust Framework</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">👩‍🏫 ประเภทวิทยากร</div>
+      <span class="tr-tag trainer-tag">AI Ethics / Legal Expert</span>
+      <span class="tr-tag trainer-tag">AI Governance Specialist</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">📋 ความต้องการจากทีม</div>
+      <div class="need-row"><span class="need-team">T14</span><span class="need-txt">ความปลอดภัยและความเหมาะสมของเนื้อหา (AI Safety & Ethics)</span></div>
+      <div class="need-row"><span class="need-team">T10</span><span class="need-txt">แนวทางการใช้ AI อย่างปลอดภัยและเหมาะสมในงานข่าว</span></div>
+      <div class="need-row"><span class="need-team">T13</span><span class="need-txt">Safety and Trust ของระบบและของ AI</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CAT 8 -->
+<div class="tr-card">
+  <div class="tr-hdr">
+    <div class="tr-title">
+      <div class="tr-icon" style="background:#fff7ed">🚀</div>
+      AI Agent & Advanced AI Workflow
+    </div>
+    <span class="tr-cnt">3 ทีม</span>
+  </div>
+  <div class="tr-body">
+    <div class="tr-section">
+      <div class="tr-section-title">💡 เนื้อหาที่ควรสอน</div>
+      <span class="tr-tag content-tag">AI Agent Architecture</span>
+      <span class="tr-tag content-tag">Multi-agent Workflow</span>
+      <span class="tr-tag content-tag">Human-in-the-loop System</span>
+      <span class="tr-tag content-tag">AI ใน Dev/QA Workflow</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">👩‍🏫 ประเภทวิทยากร</div>
+      <span class="tr-tag trainer-tag">AI Agent / LLMOps Engineer</span>
+      <span class="tr-tag trainer-tag">Advanced AI Workflow Designer</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">📋 ความต้องการจากทีม</div>
+      <div class="need-row"><span class="need-team">T20</span><span class="need-txt">การสร้างและทำงานกับ AI Agent สำหรับ VDO Graphic</span></div>
+      <div class="need-row"><span class="need-team">T6</span><span class="need-txt">AI Agent (OpenClaw), CLI Coding, Figma AI ใน Dev Workflow</span></div>
+      <div class="need-row"><span class="need-team">T2</span><span class="need-txt">การใช้ AI แบบครบด้าน, N8N + Claude AI Agent</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CAT 9 -->
+<div class="tr-card">
+  <div class="tr-hdr">
+    <div class="tr-title">
+      <div class="tr-icon" style="background:#f0fdf4">🗺️</div>
+      AI Tools Overview & Selection Strategy
+    </div>
+    <span class="tr-cnt">2 ทีม</span>
+  </div>
+  <div class="tr-body">
+    <div class="tr-section">
+      <div class="tr-section-title">💡 เนื้อหาที่ควรสอน</div>
+      <span class="tr-tag content-tag">AI Tool Landscape 2026</span>
+      <span class="tr-tag content-tag">เลือก Tool ให้ตรง Use Case</span>
+      <span class="tr-tag content-tag">Update Tools ใหม่ๆ อย่างต่อเนื่อง</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">👩‍🏫 ประเภทวิทยากร</div>
+      <span class="tr-tag trainer-tag">AI Consultant / Advisor</span>
+      <span class="tr-tag trainer-tag">AI Adoption Specialist</span>
+    </div>
+    <div class="tr-section">
+      <div class="tr-section-title">📋 ความต้องการจากทีม</div>
+      <div class="need-row"><span class="need-team">T7</span><span class="need-txt">Update Tools ใหม่ๆ หรือสอนการใช้งาน Tools ที่หลากหลาย</span></div>
+      <div class="need-row"><span class="need-team">T1</span><span class="need-txt">รู้จักความสามารถ Tools & Architecture เพื่อเลือก Tool ให้ตรงกับ Task/Solution</span></div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ====== TAB 5: TEAM TABLE ====== -->
+<div id="pane-tm" class="pane">
+<div class="content">
+<div class="card">
+  <div class="card-t">👥 รายละเอียดครบทุก 19 ทีม</div>
+  <div style="overflow-x:auto">
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>Team</th><th>ฝ่าย/แผนก</th><th>ชื่อโปรเจกต์</th><th>ผู้รับผิดชอบ</th><th>Feasibility</th>
+        <th>Objective (สรุป)</th><th>Outcome (สรุป)</th><th>AI Tools</th><th>Other Tools</th><th>Training Needs (สรุป)</th><th>💡 AI Solution Idea (สรุป)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="tn">T1</td><td>Business Development</td><td>ระบบจัดการข้อมูล & Workflow (ไทยรัฐตะกร้าแตก)</td><td style="font-size:11px">ณัฐพล แก้วประเสริฐ, พิมพ์ปวีณ์ เครือบุญมา</td><td><span class="badge bm">Medium</span></td><td style="font-size:11px">ลดกรอกข้อมูลซ้ำ เชื่อม Platform เดียว</td><td style="font-size:11px">Unified Data+AI Layer ลด Manual</td><td><span class="pill pg">Gemini</span><span class="pill po">ChatGPT</span></td><td style="font-size:11px">Apps Script, Zapier, Looker</td><td style="font-size:11px">Tools Selection, API Consultant</td><td style="font-size:11px">Data Layer + AI Layer — Primary Key เชื่อมทุกไฟล์อัตโนมัติ</td></tr>
+
+      <tr><td class="tn">T2</td><td>Commerce</td><td>Thairath Shopping AAA</td><td style="font-size:11px">วรเมธ คำเงิน, วรางคณา สิงห์บัณฑิต</td><td><span class="badge bh">High</span></td><td style="font-size:11px">ลดขั้นตอนเขียนบทความ-SEO-รูปภาพ ต้นจนจบ</td><td style="font-size:11px">ประสิทธิภาพสูงขึ้นในเวลาจำกัด</td><td><span class="pill pg">Gemini</span><span class="pill pc">Midjourney</span><span class="pill pc">Adobe</span><span class="pill pg">Nano Banana</span></td><td style="font-size:11px">Claude, N8N, Colab</td><td style="font-size:11px">API, Prompt, Content, Coding</td><td style="font-size:11px">Flow Automation งาน Routine บทความ/Social สร้าง Conversion สูงสุด</td></tr>
+
+      <tr><td class="tn">T3</td><td>ฝ่ายการตลาด</td><td>Artwork Strategy Planner</td><td style="font-size:11px">สุรวิชญ์ วงศ์เทพวาณิชย์</td><td><span class="badge bh">High</span></td><td style="font-size:11px">ลดบรีฟ Routine ควบคุม Design/Tone คุม Timeline</td><td style="font-size:11px">เวลาคิดงานเพิ่ม คอนเทนต์กระแส ลดแก้งาน</td><td><span class="pill pg">Gemini</span><span class="pill po">ChatGPT</span><span class="pill pc">Midjourney</span><span class="pill pg">NotebookLM</span></td><td>—</td><td style="font-size:11px">Marketing Workflow, Prompt AI</td><td style="font-size:11px">ป้อนข้อมูลครั้งเดียว → AI ผลิตบรีฟ/คอนเทนต์/Workflow อัตโนมัติ</td></tr>
+
+      <tr><td class="tn">T5</td><td>แผนกเทคโนโลยีฯ ออกอากาศ</td><td>Media Source Quality Checking</td><td style="font-size:11px">วรนพ สัจจโชติกูล, สุนิสา ขันกะสิกรรม</td><td><span class="badge bh">High</span></td><td style="font-size:11px">ลดกระบวนการตรวจสอบไฟล์ก่อนออกอากาศ</td><td style="font-size:11px">ตอบสนองไฟล์ไม่ได้มาตรฐานอัตโนมัติ</td><td>—</td><td style="font-size:11px">n8n</td><td>—</td><td style="font-size:11px">n8n ตรวจจับไฟล์ไม่ได้มาตรฐาน แจ้งเตือน ตอบสนองอัตโนมัติ</td></tr>
+
+      <tr><td class="tn">T6</td><td>Product & Technology (Tech)</td><td>Human Always in the Loop</td><td style="font-size:11px">นายบุญนำ แซ่จึง</td><td><span class="badge bh">High</span></td><td style="font-size:11px">Workflow AI+Human สำหรับ Dev/QA/UX/UI</td><td style="font-size:11px">ลดเวลา bug fix ลด Manual เพิ่ม Code Quality</td><td><span class="pill pg">Gemini</span><span class="pill po">ChatGPT</span><span class="pill pg">NotebookLM</span><span class="pill pv">Copilot</span></td><td style="font-size:11px">AI Agent, CLI, Figma</td><td style="font-size:11px">AI Agent, Dev Workflow</td><td style="font-size:11px">AI ช่วย implement/test/ตรวจ code — มนุษย์ review ขั้นสุดท้าย</td></tr>
+
+      <tr><td class="tn">T7</td><td>ฝ่ายทรัพยากรบุคคล</td><td>THAIRATH People Intelligence Hub</td><td style="font-size:11px">HR Team (ฟิช/ข้าวโอ๊ต/ดุ๊ก)</td><td><span class="badge bh">High</span></td><td style="font-size:11px">AI Platform บริหาร HR สรรหา→Knowledge→บริหารทีม</td><td style="font-size:11px">สรรหาแม่นยำ Knowledge ถูกเก็บ บริหารด้วย Data</td><td><span class="pill pg">Gemini</span><span class="pill pg">NotebookLM</span><span class="pill pg">Google Studio</span><span class="pill po">ChatGPT</span></td><td style="font-size:11px">Claude CoWork</td><td style="font-size:11px">Update Tools ใหม่ๆ</td><td style="font-size:11px">3 Modules: Smart Talent Matching + Knowledge Hub + Manager AI Co-Pilot</td></tr>
+
+      <tr><td class="tn">T8</td><td>ฝ่ายบัญชี</td><td>Acc Chatbot Buddy</td><td style="font-size:11px">กิ่ง ปุ๋ย ทราย</td><td><span class="badge bm">Medium</span></td><td style="font-size:11px">Chatbot ตอบคำถามบัญชี 24 ชม. ลดถามซ้ำ</td><td style="font-size:11px">ลดเวลาทีมบัญชี 30% ลดเอกสารตีกลับ</td><td><span class="pill pg">Gemini</span><span class="pill pg">Google Flow</span><span class="pill po">ChatGPT</span></td><td>—</td><td style="font-size:11px">Prompt บัญชี, Knowledge Base</td><td style="font-size:11px">ACC AI Chatbot ตอบ FAQ/SOP บัญชี 24 ชม. ลดคำถามซ้ำ</td></tr>
+
+      <tr><td class="tn">T9</td><td>Product & Technology (Tech)</td><td>A.I.D.A.</td><td style="font-size:11px">ลานี ศรีรัตน์</td><td><span class="badge bh">High</span></td><td style="font-size:11px">AI Assistant เลขา/แอดมิน ลดถามซ้ำ ดึงฟอร์มทันที</td><td style="font-size:11px">ลดเวลา 50% Zero Errors Self-Service 24 ชม.</td><td><span class="pill pg">Gemini</span></td><td>—</td><td style="font-size:11px">Prompt Engineering, Knowledge Mgmt</td><td style="font-size:11px">AI Secretary ผ่าน Google Gems เชื่อม Drive+Calendar ดึงฟอร์มทันที</td></tr>
+
+      <tr><td class="tn">T10</td><td>ฝ่ายบรรณาธิการทีวี</td><td>AI Newsroom Assistant</td><td style="font-size:11px">วรรธิณี สีเคน, ศุภรัตน์ สาครรัตน์, อนุกูล ติดรัก</td><td><span class="badge bm">Medium</span></td><td style="font-size:11px">ลดเวลาจัดการฟุตเทจ แปลภาษา สรุปประเด็น</td><td style="font-size:11px">ลดเวลา Preview/เขียนข่าว 30%</td><td><span class="pill pg">Gemini</span><span class="pill po">ChatGPT</span></td><td style="font-size:11px">ขอคำแนะนำเพิ่ม</td><td style="font-size:11px">AI Tools ข่าว, Prompt, AI Safety</td><td style="font-size:11px">AI Workflow: Detect ช็อต, ถอดเสียง, แปลภาษา, สรุป, Generate พาดหัว</td></tr>
+
+      <tr><td class="tn">T11</td><td>ฝ่ายรายการ</td><td>วิเคราะห์ข้อมูล & วางแผนคอนเทนต์</td><td style="font-size:11px">ศิริลักษณ์ ลีสม</td><td><span class="badge bm">Medium</span></td><td style="font-size:11px">วิเคราะห์คอนเทนต์จากหลายแหล่งพร้อมกัน</td><td style="font-size:11px">ประมวลผลทุกช่องทาง หาจุดแข็งต่อยอด</td><td><span class="pill pg">Gemini</span><span class="pill pg">Nano Banana</span><span class="pill po">ChatGPT</span></td><td>—</td><td>—</td><td style="font-size:11px">รวมผล Gemini+ChatGPT+Claude สร้างบทสรุปกลางอัตโนมัติ</td></tr>
+
+      <tr><td class="tn">T12</td><td>บรรณาธิการออนไลน์ (Non-News)</td><td>PR NEWS - Automation (Mail-to-Article)</td><td style="font-size:11px">มูรธา จรรยาวรลักษณ์</td><td><span class="badge bh">High</span></td><td style="font-size:11px">Automation ดึงข้อมูลจากอีเมล → Draft CMS อัตโนมัติ</td><td style="font-size:11px">ลด Time-to-Publish บริหาร 7 วัน ด้วยคน 2 คน</td><td><span class="pill pg">Gemini</span><span class="pill pg">Google Flow</span><span class="pill po">ChatGPT</span></td><td>—</td><td style="font-size:11px">Prompt ตัวอักษร, Automation Email→CMS</td><td style="font-size:11px">Email → AI เขียน Headline/โปรย + Auto Resize → Draft CMS → Approve</td></tr>
+
+      <tr><td class="tn">T13</td><td>Thairath Money</td><td>Doc-to-CMS Integration System</td><td style="font-size:11px">ธัญธิดา ทองเพชร, โยธิน อิทรภิรมย์</td><td><span class="badge bm">Medium</span></td><td style="font-size:11px">เชื่อม Google Docs → CMS อัตโนมัติ แทน Copy-Paste</td><td style="font-size:11px">ความเร็ว +80%, ลดขั้นตอน 90%</td><td>—</td><td style="font-size:11px">Google Apps Script</td><td style="font-size:11px">Apps Script, AI Safety</td><td style="font-size:11px">ลากไฟล์ → Script 5 นาที ดึงเนื้อหา → ส่ง CMS อัตโนมัติ</td></tr>
+
+      <tr><td class="tn">T14</td><td>ฝ่าย Mirror</td><td>ไม่เททุกแชท (No Chat Left Behind)</td><td style="font-size:11px">กมลชนก คัชมาตย์, พัชญ์สิตา ไพบูลย์ศิริ</td><td><span class="badge bm">Medium</span></td><td style="font-size:11px">AI คัดกรอง/จัดหมวด FB/IG Inbox 24 ชม.</td><td style="font-size:11px">ตอบกลับ 100% ลดภาระ Admin</td><td><span class="pill pg">Gemini</span><span class="pill pg">NotebookLM</span><span class="pill po">ChatGPT</span></td><td style="font-size:11px">ManyChat, Zapier, Notion</td><td style="font-size:11px">Prompt, Chatbot, Data Mgmt, AI Safety</td><td style="font-size:11px">AI Smart Gatekeeper คัดกรองแชท ตอบ FAQ + ส่งต่อ editor ทันที</td></tr>
+
+      <tr><td class="tn">T16</td><td>ฝ่ายกีฬา</td><td>AI FOR THAIRATH SPORT</td><td style="font-size:11px">ธรรศ์ทัศน์ วินิจมานนท์, ดิษฐกรณ์ โพราราช</td><td><span class="badge bh">High</span></td><td style="font-size:11px">VDO: หาประเด็นกระแส | ข่าว: หาข้อมูลสถิติทำข่าว</td><td style="font-size:11px">ลดเวลา ความถูกต้องมากขึ้น</td><td><span class="pill pg">Gemini</span><span class="pill pg">NotebookLM</span><span class="pill po">ChatGPT</span><span class="pill pc">Adobe</span></td><td>—</td><td style="font-size:11px">AI สำหรับรายการ/คลิป/ข่าวกีฬา</td><td style="font-size:11px">AI หาประเด็นกระแสโซเชียล + ข้อมูลสถิติ สำหรับรายการ/ข่าวกีฬา</td></tr>
+
+      <tr><td class="tn">T17</td><td>ฝ่ายไทยรัฐบันเทิง</td><td>เรื่องใหญ่แล้วล่ะ</td><td style="font-size:11px">กะรัต เกิดทะเล, ชลธิชา ทัดศรี, วรุณรัตน์ กาฬพันธ์</td><td><span class="badge bh">High</span></td><td style="font-size:11px">ลดเวลา/ทดแทนตำแหน่งขาด สร้างโปรเจกต์ใน 1 วัน</td><td style="font-size:11px">ครีเอทงานเสนอลูกค้าได้ดีเยี่ยม ข้อบกพร่องน้อย</td><td><span class="pill pg">Gemini</span><span class="pill pg">NotebookLM</span><span class="pill pc">Adobe</span><span class="pill pc">Freepik</span></td><td style="font-size:11px">Seedance</td><td style="font-size:11px">Seedance, AI Image Generation</td><td style="font-size:11px">AI ผลิต Presentation + กราฟิก + สร้างภาพจากจินตนาการ ใน 1 วัน</td></tr>
+
+      <tr><td class="tn">T18</td><td>บรรณาธิการออนไลน์ (News)</td><td>FlowCut</td><td style="font-size:11px">Sornsawan Wongchaichana, Sarinya Maliwan</td><td><span class="badge bh">High</span></td><td style="font-size:11px">AI สนับสนุนงานตัดต่อ User-Friendly Flow</td><td style="font-size:11px">ส่งมอบวิดีโอเร็วขึ้น ประสานงานไร้รอยต่อ</td><td><span class="pill pg">Gemini</span><span class="pill pc">Adobe</span></td><td style="font-size:11px">CapCut, Codex, Gling, Claude</td><td style="font-size:11px">AI ตัดต่อวิดีโอ</td><td style="font-size:11px">AI ถอดเทป แยกประโยค ลบซ้ำ เลือกช่วงดี → Docs → ทีมตัดต่อ</td></tr>
+
+      <tr><td class="tn">T19</td><td>Thairath Creative</td><td>Creative Co-Pilot AI</td><td style="font-size:11px">คุณต้อง คุณบอมบ์</td><td><span class="badge bh">High</span></td><td style="font-size:11px">แก้คอขวด Creative Workflow ขับเคลื่อนปริมาณงาน</td><td style="font-size:11px">ลดเวลา 30-50% คงคุณภาพงาน Creative</td><td><span class="pill pg">Gemini</span><span class="pill pg">Nano Banana</span><span class="pill po">ChatGPT</span></td><td>—</td><td>—</td><td style="font-size:11px">AI Workflow ช่วยคิดไอเดีย ผลิต Content ปริมาณมาก ลด Manual</td></tr>
+
+      <tr><td class="tn">T20</td><td>ฝ่ายสร้างสรรค์และออกแบบ</td><td>AI & Automation for VDO GRAPHIC</td><td style="font-size:11px">พี่สุ, อ๊อฟ</td><td><span class="badge bm">Medium</span></td><td style="font-size:11px">ลดงานกราฟิก Pattern ซ้ำซ้อน ลดเวลาผลิต Simulation</td><td style="font-size:11px">ย่นเวลาผลิตงาน Pattern คืนเวลาสร้างสรรค์</td><td><span class="pill pg">Gemini</span><span class="pill pg">Nano Banana</span><span class="pill pg">Google Flow</span></td><td style="font-size:11px">Gemini Omni</td><td style="font-size:11px">Make.com, AI Agent, JSON/JSX</td><td style="font-size:11px">JSON Agent → Make.com → CSV → Storyboard → QC → Mimir อัตโนมัติ</td></tr>
+
+      <tr><td class="tn">T21</td><td>Creative Digital Studio</td><td>AI Image Resizer</td><td style="font-size:11px">ชวิน เจียรพินิจนันท์</td><td><span class="badge bm">Medium</span></td><td style="font-size:11px">AI สร้าง Artwork 4 ไซส์ (1:1, 4:5, 16:9, 9:16)</td><td style="font-size:11px">ลดระยะเวลา 30%</td><td><span class="pill pg">Gemini</span><span class="pill pg">Nano Banana</span><span class="pill po">ChatGPT</span><span class="pill pc">Freepik</span></td><td style="font-size:11px">Claude</td><td style="font-size:11px">AI No Coding, Creative Workflow</td><td style="font-size:11px">Prompt Engine + Freepik Resize Artwork 1 ต้นแบบ → ครบ 4 Ratio</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+</div>
+</div>
+
+<script>
+function show(id,el){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+// Feasibility
+new Chart(document.getElementById('c-feas'),{
+  type:'doughnut',
+  data:{labels:['High (12 ทีม)','Medium (7 ทีม)'],
+    datasets:[{data:[12,7],backgroundColor:['#10b981','#f59e0b'],borderWidth:3,borderColor:'#fff',hoverOffset:8}]},
+  options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+    plugins:{legend:{position:'bottom',labels:{padding:14,font:{size:12}}}}}
+});
+
+// Top Tools
+new Chart(document.getElementById('c-toptools'),{
+  type:'bar',
+  data:{labels:['Gemini','ChatGPT','NotebookLM','Nano Banana','New Gem','Google Flow','Adobe'],
+    datasets:[{data:[17,13,6,6,6,5,4],
+      backgroundColor:['#3b82f6','#10b981','#8b5cf6','#f59e0b','#6366f1','#14b8a6','#ec4899'],
+      borderRadius:8,borderSkipped:false}]},
+  options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:'#f3f4f6'},max:19,ticks:{stepSize:2}},y:{grid:{display:false}}}}
+});
+
+// Tool Cat
+new Chart(document.getElementById('c-toolcat'),{
+  type:'bar',
+  data:{labels:['Google AI','OpenAI/ChatGPT','Creative AI','Automation','Dev Tools'],
+    datasets:[{data:[17,13,7,6,3],
+      backgroundColor:['#3b82f6','#10b981','#ec4899','#f59e0b','#8b5cf6'],
+      borderRadius:8,borderSkipped:false}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{display:false}},y:{grid:{color:'#f3f4f6'},max:20,ticks:{stepSize:2}}}}
+});
+
+// Training overview
+new Chart(document.getElementById('c-trainov'),{
+  type:'bar',
+  data:{labels:['Prompt Eng.','Automation','Creative AI','News/Content','API & Coding','Chatbot/KB','AI Safety','AI Agent','Tools Overview'],
+    datasets:[{data:[7,4,4,4,4,3,3,3,2],
+      backgroundColor:['#ef4444','#f59e0b','#ec4899','#10b981','#f59e0b','#06b6d4','#ef4444','#8b5cf6','#6b7280'],
+      borderRadius:6,borderSkipped:false}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'#f3f4f6'},max:8,ticks:{stepSize:1}}}}
+});
+
+// All Tools (tab 3)
+new Chart(document.getElementById('c-alltools'),{
+  type:'bar',
+  data:{labels:['Gemini','ChatGPT','NotebookLM','Nano Banana','New Gem','Google Flow','Adobe','Freepik','Claude AI','Midjourney','Copilot'],
+    datasets:[{data:[17,13,6,6,6,5,4,3,3,2,1],
+      backgroundColor:['#3b82f6','#10b981','#8b5cf6','#f59e0b','#6366f1','#14b8a6','#ec4899','#f97316','#22d3ee','#a855f7','#64748b'],
+      borderRadius:6,borderSkipped:false}]},
+  options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:'#f3f4f6'},max:19},y:{grid:{display:false},ticks:{font:{size:11}}}}}
+});
+
+// Cat Pie (tab 3)
+new Chart(document.getElementById('c-catpie'),{
+  type:'doughnut',
+  data:{labels:['Google AI Suite','OpenAI/ChatGPT','Creative AI','Automation','Dev & Data'],
+    datasets:[{data:[17,13,7,6,3],
+      backgroundColor:['#3b82f6','#10b981','#ec4899','#f59e0b','#8b5cf6'],
+      borderWidth:3,borderColor:'#fff',hoverOffset:8}]},
+  options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
+    plugins:{legend:{position:'bottom',labels:{padding:12,font:{size:11}}}}}
+});
+
+// Training bar (tab 4)
+new Chart(document.getElementById('c-trainbar'),{
+  type:'bar',
+  data:{labels:['Prompt Engineering','AI Automation\nNo-Code','API & Coding\n+ AI Agent','AI for News\n& Content','Creative AI\n& Video','Chatbot &\nKnowledge Base','AI Safety\n& Ethics','AI Agent\nAdvanced','Tools Overview\n& Strategy'],
+    datasets:[{data:[7,4,4,4,4,3,3,3,2],
+      backgroundColor:['#ef4444','#f59e0b','#f59e0b','#10b981','#ec4899','#06b6d4','#ef4444','#8b5cf6','#6b7280'],
+      borderRadius:6,borderSkipped:false}]},
+  options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:'#f3f4f6'},max:8,ticks:{stepSize:1}},y:{grid:{display:false},ticks:{font:{size:11}}}}}
+});
+</script>
+</body>
+</html>
